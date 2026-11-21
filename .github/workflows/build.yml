@@ -1,0 +1,25 @@
+name: Build libmod.so
+on: [push, workflow_dispatch]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup NDK
+        uses: nttld/setup-ndk@v1
+        with:
+          ndk-version: r25c
+
+      - name: Build Native Library
+        run: |
+          cd app/src/main/jni
+          $NDK_HOME/ndk-build
+
+      - name: Upload libmod.so
+        uses: actions/upload-artifact@v4
+        with:
+          name: libmod-arm64
+          path: app/src/main/libs/arm64-v8a/libmod.so
