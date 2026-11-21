@@ -8,14 +8,9 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup NDK
-        uses: nttld/setup-ndk@v1
-        with:
-          ndk-version: r25c
-
       - name: Build Native Library
         run: |
-          $NDK_HOME/ndk-build NDK_PROJECT_PATH=app/src/main APP_BUILD_SCRIPT=app/src/main/jni/Android.mk NDK_APPLICATION_MK=app/src/main/jni/Application.mk
+          $ANDROID_NDK_LATEST_HOME/ndk-build NDK_PROJECT_PATH=app/src/main APP_BUILD_SCRIPT=app/src/main/jni/Android.mk NDK_APPLICATION_MK=app/src/main/jni/Application.mk
 
       - name: Upload libmod.so
         uses: actions/upload-artifact@v4
