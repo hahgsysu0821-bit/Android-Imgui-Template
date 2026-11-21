@@ -10,7 +10,7 @@ jobs:
 
       - name: Build Native Library
         run: |
-          $ANDROID_NDK_LATEST_HOME/ndk-build NDK_PROJECT_PATH=app/src/main APP_BUILD_SCRIPT=app/src/main/jni/Android.mk NDK_APPLICATION_MK=app/src/main/jni/Application.mk
+          $ANDROID_NDK_LATEST_HOME/ndk-build NDK_PROJECT_PATH=app/src/main APP_BUILD_SCRIPT=app/src/main/jni/Android.mk NDK_APPLICATION_MK=app/src/main/jni/Application.mk APP_CFLAGS+=-DPAGE_SIZE=4096
 
       - name: Upload libmod.so
         uses: actions/upload-artifact@v4
