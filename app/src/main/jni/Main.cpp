@@ -17,28 +17,28 @@
 
 // 0:DWORD, 1:FLOAT, 2:DOUBLE, 3:QWORD, 4:WORD, 5:BYTE
 static int scanType = 0;
-static char searchBuf[64] = "0";
-static char replaceBuf[64] = "99999";
+static int searchInt = 0, replaceInt = 99999;
+static float searchFloat = 0.0f, replaceFloat = 99999.0f;
 static bool freezeMem = false;
 static std::vector<uintptr_t> foundAddrs;
 
 bool MatchVal(uintptr_t a) {
-    if (scanType == 0) return *(int32_t*)a == std::stoi(searchBuf);
-    if (scanType == 1) return fabsf(*(float*)a - std::stof(searchBuf)) < 0.01f;
-    if (scanType == 2) return fabs(*(double*)a - std::stod(searchBuf)) < 0.01;
-    if (scanType == 3) return *(int64_t*)a == std::stoll(searchBuf);
-    if (scanType == 4) return *(int16_t*)a == (int16_t)std::stoi(searchBuf);
-    if (scanType == 5) return *(uint8_t*)a == (uint8_t)std::stoi(searchBuf);
+    if (scanType == 0) return *(int32_t*)a == (int32_t)searchInt;
+    if (scanType == 1) return fabsf(*(float*)a - searchFloat) < 0.01f;
+    if (scanType == 2) return fabs(*(double*)a - (double)searchFloat) < 0.01;
+    if (scanType == 3) return *(int64_t*)a == (int64_t)searchInt;
+    if (scanType == 4) return *(int16_t*)a == (int16_t)searchInt;
+    if (scanType == 5) return *(uint8_t*)a == (uint8_t)searchInt;
     return false;
 }
 
 void WriteVal(uintptr_t a) {
-    if (scanType == 0) *(int32_t*)a = std::stoi(replaceBuf);
-    else if (scanType == 1) *(float*)a = std::stof(replaceBuf);
-    else if (scanType == 2) *(double*)a = std::stod(replaceBuf);
-    else if (scanType == 3) *(int64_t*)a = std::stoll(replaceBuf);
-    else if (scanType == 4) *(int16_t*)a = (int16_t)std::stoi(replaceBuf);
-    else if (scanType == 5) *(uint8_t*)a = (uint8_t)std::stoi(replaceBuf);
+    if (scanType == 0) *(int32_t*)a = (int32_t)replaceInt;
+    else if (scanType == 1) *(float*)a = replaceFloat;
+    else if (scanType == 2) *(double*)a = (double)replaceFloat;
+    else if (scanType == 3) *(int64_t*)a = (int64_t)replaceInt;
+    else if (scanType == 4) *(int16_t*)a = (int16_t)replaceInt;
+    else if (scanType == 5) *(uint8_t*)a = (uint8_t)replaceInt;
 }
 
 void NewScan() {
@@ -101,13 +101,21 @@ EGLBoolean _eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
     if (ShowMenu) {
         ImGui::SetNextWindowSize(ImVec2(700, 520), ImGuiCond_FirstUseEver);
         if (ImGui::Begin(OBFUSCATE("GG Scanner"), &ShowMenu)) {
-            const char* types[] = {"DWORD", "FLOAT", "DOUBLE", "QWORD", "WORD", "BYTE"};
-            if (ImGui::Combo(OBFUSCATE("Kieu du lieu"), &scanType, types, 6)) {
-                foundAddrs.clear();
-                freezeMem = false;
-            }
+            if (ImGui::RadioButton(OBFUSCATE("DWORD"), &scanType, 0)) { foundAddrs.clear(); freezeMem = false; }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(OBFUSCATE("FLOAT"), &scanType, 1)) { foundAddrs.clear(); freezeMem = false; }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(OBFUSCATE("DOUBLE"), &scanType, 2)) { foundAddrs.clear(); freezeMem = false; }
+            
+            if (ImGui::RadioButton(OBFUSCATE("QWORD"), &scanType, 3)) { foundAddrs.clear(); freezeMem = false; }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(OBFUSCATE("WORD"), &scanType, 4)) { foundAddrs.clear(); freezeMem = false; }
+            ImGui::SameLine();
+            if (ImGui::RadioButton(OBFUSCATE("BYTE"), &scanType, 5)) { foundAddrs.clear(); freezeMem = false; }
 
-            ImGui::InputText(OBFUSCATE("Gia tri tim"), searchBuf, sizeof(searchBuf));
+            bool isFloatType = (scanType == 1 || scanType == 2);
+            if (!isFloatType) ImGui::InputInt(OBFUSCATE("Gia tri tim"), &searchInt);
+            else ImGui::InputFloat(OBFUSCATE("Gia tri tim"), &searchFloat);
 
             if (ImGui::Button(OBFUSCATE("Tim moi"))) NewScan();
             ImGui::SameLine();
@@ -117,7 +125,8 @@ EGLBoolean _eglSwapBuffers(EGLDisplay dpy, EGLSurface surface) {
 
             ImGui::Text(OBFUSCATE("Ket qua: %zu"), foundAddrs.size());
 
-            ImGui::InputText(OBFUSCATE("Sua thanh"), replaceBuf, sizeof(replaceBuf));
+            if (!isFloatType) ImGui::InputInt(OBFUSCATE("Sua thanh"), &replaceInt);
+            else ImGui::InputFloat(OBFUSCATE("Sua thanh"), &replaceFloat);
 
             if (ImGui::Button(OBFUSCATE("Sua tat ca"))) ModifyAll();
             ImGui::SameLine();
